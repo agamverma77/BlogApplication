@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CKEditor 5 Test</title>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+  </head>
+  <body>
+    <h3>Add post</h3>
+    <textarea id="editor">Type here...</textarea>
+
+    <script>
+      ClassicEditor
+        .create(document.querySelector('#editor'))
+        .catch(error => {
+          console.error(error);
+        });
+    </script>
+  </body>
+</html>
