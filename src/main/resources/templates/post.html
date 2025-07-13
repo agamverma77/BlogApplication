@@ -13,6 +13,26 @@
     <header th:replace="/fragements/header :: header">
   </div>
 
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Danger</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <a  th:href="@{'/post/'+${post.id} + '/delete'}" class="btn btn-danger btn-lg active" role="button" aria-pressed="true">Delete</a>
+      </div>
+    </div>
+  </div>
+</div>
   <!-- about section -->
 
   <section class="about_section layout_padding">
@@ -25,7 +45,12 @@
           <p th:utext="${post.body}">body</p> <!--thymleaf will replace these small texts "Title" "body" with whatever is there-->
           <hr color="grey"/>
           <div sec:authorize="isAuthenticated()" th:if="${isOwner}">
-          <a  th:href="@{'/post/'+${post.id} + '/edit'}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Edit</a>
+          <a  th:href="@{'/post/'+${post.id} + '/edit'}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Edit</a> |
+          <!-- Button trigger modal -->
+<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModal">
+  Delete
+</button>
+          
           </div>
       </div>
       

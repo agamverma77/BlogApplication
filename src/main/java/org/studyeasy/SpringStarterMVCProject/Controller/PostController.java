@@ -122,4 +122,20 @@ public class PostController {
         
     }
 
+    @GetMapping("/post/{id}/delete")
+    @PreAuthorize("isAuthenticated()")
+    public String deletePost(@PathVariable Long id)
+    {
+        Optional<Post> optionalPost=postService.getById(id);
+        if(optionalPost.isPresent())
+        {
+            Post post=optionalPost.get();
+            postService.delete(post);
+            return "redirect:/";
+        }
+        else{
+            return "redirect:/?error";
+        }
+    }
+
 }
