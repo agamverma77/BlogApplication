@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +15,9 @@ import org.studyeasy.SpringStarterMVCProject.models.Account;
 import org.studyeasy.SpringStarterMVCProject.models.Post;
 import org.studyeasy.SpringStarterMVCProject.services.AccountService;
 import org.studyeasy.SpringStarterMVCProject.services.PostService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -76,7 +80,11 @@ public class PostController {
 
     @PostMapping("/posts/add")
     @PreAuthorize("isAuthenticated()") // if user is not authenticated it'll not allow user to come here
-    public String addPostHandler(@ModelAttribute Post post, Principal principal) {
+    public String addPostHandler(@Valid @ModelAttribute Post post,BindingResult result, Principal principal) {
+        if(result.hasErrors())
+        {
+            return "post_add";
+        }
         String authUser = "email";
         if (principal != null) {
             authUser = principal.getName();// getting current author email, logged in one
@@ -107,8 +115,13 @@ public class PostController {
 
     @PostMapping("/post/{id}/edit")
     @PreAuthorize("isAuthenticated()")
-    public String updatePost(@PathVariable Long id,@ModelAttribute Post post)
+    public String updatePost(@Valid @ModelAttribute Post post, BindingResult result,@PathVariable Long id)
     {
+        if(result.hasErrors())
+        {
+             return "post_edit";
+        }
+
      Optional<Post> optionalPost=postService.getById(id);
      if(optionalPost.isPresent())
      {

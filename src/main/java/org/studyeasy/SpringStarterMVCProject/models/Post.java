@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,9 +23,11 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)//updation sequentially
     private Long id;
 
+    @NotBlank(message = "Missing Post title")
     private String title;
 
     @Column(columnDefinition = "TEXT")
+    @NotBlank(message = "Missing Form Body")
     private String body;
 
     private LocalDateTime createdAt;
