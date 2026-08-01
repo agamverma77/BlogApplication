@@ -16,9 +16,17 @@ public class PostService {
     public Optional<Post> getById(Long id) {
         return postRepository.findById(id);
     }
-    //now we'll list all posts so we'll return a list, so we'll use List as return type
+    //now we'll list all posts so we'll return a list, ordered by newest first
     public List<Post> getAll() {
-        return postRepository.findAll();
+        return postRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    // search posts by keyword in title or body
+    public List<Post> search(String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return postRepository.findByTitleContainingIgnoreCaseOrBodyContainingIgnoreCaseOrderByCreatedAtDesc(keyword.trim(), keyword.trim());
+        }
+        return getAll();
     }
     //now we'll delete post
     public void delete(Post post) {

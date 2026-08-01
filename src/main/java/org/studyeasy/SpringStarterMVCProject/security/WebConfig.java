@@ -20,105 +20,71 @@ import static org.springframework.security.config.Customizer.withDefaults;
  
  
 @Configuration
- 
 @EnableMethodSecurity
 @SuppressWarnings("removal")
- 
 public class WebConfig {
- 
-private static final String[] WHITELIST= {
-    //we'll need to make a list of what all pages to allow
-    //we need to add css all images files etc everything because spring security does not allow them also
- 
-"/",
- 
-"/login",
- 
-"/register",
- 
-"/db-console/**",
- 
-"/css/**", //this means allow all css files
- 
-"/fonts/**",
- 
-"/images/**",
- 
-"/js/**"
- 
-};
 
-@Bean
-public static PasswordEncoder passwordEncoder()
-{
-    return new BCryptPasswordEncoder();
-}
- //chaining the configurations to http security object
-@Bean
- 
+    private static final String[] WHITELIST = {
+        "/",
+        "/login",
+        "/register",
+        "/db-console/**",
+        "/css/**",
+        "/fonts/**",
+        "/images/**",
+        "/js/**"
+    };
+
+    @Bean
+    public static PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
- 
         http
- 
-            .authorizeHttpRequests((authz) -> {
+            .authorizeHttpRequests(authz -> {
                 try {
                     authz
-
-                                // .requestMatchers("/api/admin/**").hasRole("ADMIN")
- 
-                        
-                                .requestMatchers(WHITELIST)
-
-                                .permitAll()
-                                .requestMatchers("/post/**").permitAll() // ✅ Add this line
-                                .requestMatchers("/profile/**").authenticated()
-                                .requestMatchers("/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/editor/**").hasAnyRole("ADMIN","EDITOR")
-                                .requestMatchers("/test").hasAuthority(Privilages.ACCESS_ADMIN_PANEL.getAuthorityString())//earlier we used "/admin/** here also , but that called conflict & admin was not opening in super_admin, so to only show, i made test, will fix it later"
-                                .anyRequest().authenticated() 
-                                .and()
-                                .formLogin(login -> {
-                                    try {
-                                        login
-                                                        .loginPage("/login")
-                                                        .loginProcessingUrl("/login")
-                                                        .usernameParameter("email")
-                                                        .passwordParameter("password")
-                                                        .defaultSuccessUrl("/", true)//success login hone per redirect to home page
-                                                        .failureUrl("/login?error")//failure login hone per redirect to login page with error message 
-                                                        .permitAll()
-                                                        .and()
-                                                        .logout(logout -> logout
-                                                                .logoutUrl("/logout")
-                                                                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
-                                                                .logoutSuccessUrl("/"));
-                                                        //.httpBasic(withDefaults());//this is the logout functionality that we'll use
-                                                        //we are using Basic mechanism for login, we'll see more mechanisms when we study REST
-                                    } catch (Exception e) {
-                                        // TODO Auto-generated catch block
-                                        e.printStackTrace();
-                                    }
-                                }
-                                        );
+                        .requestMatchers(WHITELIST).permitAll()
+                        .requestMatchers("/post/**").permitAll()
+                        .requestMatchers("/profile/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/editor/**").hasAnyRole("ADMIN", "EDITOR")
+                        .requestMatchers("/test").hasAuthority(Privilages.ACCESS_ADMIN_PANEL.getAuthorityString())
+                        .anyRequest().authenticated();
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-            }
-                    
-                )
+            })
+            .formLogin(login -> {
+                try {
+                    login
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?error")
+                        .permitAll();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            })
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                .logoutSuccessUrl("/"))
+            .rememberMe(rememberMe -> rememberMe
+                .rememberMeParameter("remember-me")
+                .key("mySecureKey123") // Optional: Set a secure unique key
+                .tokenValiditySeconds(7 * 24 * 60 * 60) // 7 days
+            )
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/db-console/**"))
+            )
+            .headers(headers -> headers.frameOptions().disable());
 
-            //.httpBasic(Customizer.withDefaults())
-            //remove these after upgrading the DB from H2 infile DB
-            .csrf(csrf->csrf.ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/db-console/**")))
-            .headers(headers->headers.frameOptions().disable());
-        
         return http.build();
-        //with theses configurations , we'll be able to allow those above defined pages
- 
     }
-/*private Customizer<HttpBasicConfigurer<HttpSecurity>> withDefaults() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'withDefaults'");
-}*/
 }

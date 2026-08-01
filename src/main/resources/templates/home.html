@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="/fragements/head :: head">
 </head>
@@ -11,23 +11,239 @@
       <img th:src="@{/images/nav-bg.jpg}" alt="">
     </div>
     <header th:replace="/fragements/header :: header"></header>
-  </div>
+    
+    <!-- Hero Banner Section -->
+    <div class="hero-banner text-center text-white py-5">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <span class="badge badge-pill badge-warning mb-3 px-3 py-2 text-dark font-weight-bold" style="letter-spacing: 1px;">
+              <i class="fa-solid fa-sparkles"></i> WELCOME TO BLOGVERSE
+            </span>
+            <h1 class="display-4 font-weight-bold mb-3" style="font-family: 'Open Sans', sans-serif;">Discover Inspiring Stories & AI Insights</h1>
+            <p class="lead text-light mb-4" style="opacity: 0.9;">
+              Dive into articles written by passionate creators, engage in meaningful discussions, and get instant AI summaries.
+            </p>
+            
+            <!-- Search & Action Bar -->
+            <div class="search-box-wrapper mx-auto mb-4" style="max-width: 600px;">
+              <form method="get" th:action="@{/}" class="d-flex shadow-sm rounded-pill p-1 bg-white">
+                <input type="text" name="search" class="form-control border-0 rounded-pill px-4" 
+                       placeholder="Search articles by title or keyword..." 
+                       th:value="${searchQuery}" 
+                       style="box-shadow: none; font-size: 1rem;">
+                <button type="submit" class="btn btn-warning rounded-pill px-4 font-weight-bold text-dark d-flex align-items-center">
+                  <i class="fa fa-search mr-2"></i> Search
+                </button>
+                <a th:if="${searchQuery != null and !#strings.isEmpty(searchQuery)}" th:href="@{/}" 
+                   class="btn btn-light rounded-pill ml-1 px-3 d-flex align-items-center text-muted" title="Clear search">
+                  <i class="fa fa-times"></i>
+                </a>
+              </form>
+            </div>
 
-  <!-- about section -->
-  <section class="about_section layout_padding">
-    <div class="container">
-      <div class="posts" th:each="post : ${posts}">
-        <h3>
-          <a th:href="@{'/post/' + ${post.id}}" th:text="${post.title}">Title</a>
-        </h3>
-        <h5 th:text="'Author: '+${post.account.firstname} + 
-          ' | Created at: '+${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}+
-          ' | Updated at: '+${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}"></h5>
-        <p th:utext="${post.body}">body</p>
-        <hr color="grey"/>
+            <!-- Quick Action for authenticated users -->
+            <div sec:authorize="isAuthenticated()">
+              <a th:href="@{/posts/add}" class="btn btn-outline-light rounded-pill px-4 py-2 font-weight-bold">
+                <i class="fa fa-feather-pointed mr-2"></i> Write a New Post
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
+
+  <!-- Blog Cards Grid Section -->
+  <section class="blog_section layout_padding" style="background-color: #f8f9fa;">
+    <div class="container">
+      
+      <!-- Section Header / Active Filter Info -->
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+          <h2 class="h3 font-weight-bold text-dark mb-1" style="font-family: 'Open Sans', sans-serif;">
+            <span th:if="${searchQuery != null and !#strings.isEmpty(searchQuery)}">
+              Search Results for "<span class="text-warning" th:text="${searchQuery}"></span>"
+            </span>
+            <span th:unless="${searchQuery != null and !#strings.isEmpty(searchQuery)}">
+              Latest Articles
+            </span>
+          </h2>
+          <p class="text-muted mb-0" th:text="${posts.size()} + ' post(s) found'"></p>
+        </div>
+        
+        <div th:if="${searchQuery != null and !#strings.isEmpty(searchQuery)}">
+          <a th:href="@{/}" class="btn btn-sm btn-outline-secondary rounded-pill">
+            <i class="fa fa-arrow-left mr-1"></i> Show All Posts
+          </a>
+        </div>
+      </div>
+
+      <!-- Empty State when no posts found -->
+      <div th:if="${#lists.isEmpty(posts)}" class="text-center py-5 my-5 bg-white rounded-lg shadow-sm p-5 border">
+        <div class="empty-state-icon mb-4">
+          <i class="fa-regular fa-newspaper fa-4x text-muted" style="opacity: 0.5;"></i>
+        </div>
+        <h3 class="h4 font-weight-bold text-dark">No Articles Found</h3>
+        <p class="text-muted mb-4">
+          <span th:if="${searchQuery != null}">We couldn't find any articles matching your search query. Try searching with different keywords!</span>
+          <span th:unless="${searchQuery != null}">There are currently no blog posts available. Be the first one to share your thoughts!</span>
+        </p>
+        <div class="d-inline-flex gap-2">
+          <a th:if="${searchQuery != null}" th:href="@{/}" class="btn btn-outline-secondary rounded-pill px-4 mr-2">
+            Clear Search
+          </a>
+          <a sec:authorize="isAuthenticated()" th:href="@{/posts/add}" class="btn btn-warning text-dark font-weight-bold rounded-pill px-4">
+            <i class="fa fa-plus mr-1"></i> Create First Post
+          </a>
+          <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn btn-warning text-dark font-weight-bold rounded-pill px-4">
+            Sign In to Post
+          </a>
+        </div>
+      </div>
+
+      <!-- Posts Cards Grid -->
+      <div th:unless="${#lists.isEmpty(posts)}" class="row">
+        <div class="col-lg-4 col-md-6 mb-4 d-flex align-items-stretch" th:each="post : ${posts}">
+          <div class="card blog-card w-100 shadow-sm border-0 rounded-lg overflow-hidden d-flex flex-column">
+            
+            <!-- Card Header: Author, Date, Reading Time -->
+            <div class="card-body pb-2">
+              <div class="d-flex align-items-center mb-3">
+                <div class="author-avatar mr-2" th:text="${post.account != null and post.account.firstname != null ? #strings.substring(post.account.firstname, 0, 1).toUpperCase() : 'U'}">
+                  A
+                </div>
+                <div class="author-info flex-grow-1 text-truncate">
+                  <h6 class="mb-0 font-weight-bold text-dark text-truncate" th:text="${post.account != null ? post.account.firstname : 'Anonymous'}">Author</h6>
+                  <small class="text-muted" th:text="${#temporals.format(post.createdAt, 'MMM dd, yyyy')}">Date</small>
+                </div>
+                <span class="badge badge-light text-muted border px-2 py-1" style="font-size: 0.75rem;">
+                  <i class="fa-regular fa-clock mr-1"></i> <span th:text="${post.getEstimatedReadTime()} + 'm read'">3m read</span>
+                </span>
+              </div>
+
+              <!-- Post Title -->
+              <h4 class="card-title h5 font-weight-bold mb-3">
+                <a th:href="@{'/post/' + ${post.id}}" class="post-title-link text-dark" th:text="${post.title}">
+                  Post Title
+                </a>
+              </h4>
+
+              <!-- AI Summary Box if available -->
+              <div th:if="${post.getSummarySnippet() != null}" class="ai-summary-badge-box mb-3 p-2 rounded">
+                <div class="d-flex align-items-center mb-1">
+                  <span class="ai-pill-tag">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> AI Summary
+                  </span>
+                </div>
+                <p class="ai-summary-text mb-0 small text-dark" th:text="${post.getSummarySnippet()}"></p>
+              </div>
+
+              <!-- Body Excerpt (shown if no AI summary, or clean preview) -->
+              <p th:if="${post.getSummarySnippet() == null}" class="card-text text-muted mb-3" style="font-size: 0.92rem; line-height: 1.5;" th:text="${post.getPlainSnippet()}">
+                Post preview excerpt goes here...
+              </p>
+            </div>
+
+            <!-- Card Footer: Comments & Action Button -->
+            <div class="card-footer bg-white border-top-0 pt-0 pb-3 mt-auto d-flex justify-content-between align-items-center">
+              <span class="text-muted small">
+                <i class="fa-regular fa-comments mr-1 text-warning"></i>
+                <span th:text="${post.comments != null ? post.comments.size() : 0}">0</span> comments
+              </span>
+
+              <a th:href="@{'/post/' + ${post.id}}" class="btn btn-sm btn-outline-warning text-dark font-weight-bold rounded-pill px-3">
+                Read More <i class="fa fa-arrow-right ml-1"></i>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
   </section>
+
+  <!-- Custom Styles for Landing Page Cards & Elements -->
+  <style>
+    .blog-card {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      border-radius: 14px !important;
+      transition: all 0.25s ease-in-out;
+    }
+    .blog-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12) !important;
+      border-color: #ffbe33 !important;
+    }
+    .author-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffbe33, #e69c00);
+      color: #111;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .post-title-link {
+      transition: color 0.2s;
+      text-decoration: none;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .post-title-link:hover {
+      color: #e69c00 !important;
+    }
+    .ai-summary-badge-box {
+      background: linear-gradient(135deg, #f0f4ff 0%, #fdf4ff 100%);
+      border: 1px solid #e0e7ff;
+      border-left: 3px solid #6366f1;
+    }
+    .ai-pill-tag {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+    .ai-summary-text {
+      color: #374151;
+      font-style: italic;
+      line-height: 1.4;
+    }
+    .btn-warning {
+      background-color: #ffbe33;
+      border-color: #ffbe33;
+    }
+    .btn-warning:hover {
+      background-color: #e69c00;
+      border-color: #e69c00;
+    }
+    .btn-outline-warning {
+      border-color: #ffbe33;
+      color: #222;
+    }
+    .btn-outline-warning:hover {
+      background-color: #ffbe33;
+      color: #111;
+      border-color: #ffbe33;
+    }
+    .hero-banner {
+      position: relative;
+      z-index: 2;
+      padding: 60px 0;
+    }
+  </style>
 
   <footer th:replace="/fragements/footer :: footer"></footer>
 

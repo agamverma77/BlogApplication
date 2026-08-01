@@ -30,6 +30,9 @@ public class PostController {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private org.studyeasy.SpringStarterMVCProject.services.AiSummarizationService aiSummarizationService;
+
     @GetMapping("/post/{id}")
     public String getPost(@PathVariable Long id, Model model, Principal principal) {
         Optional<Post> optionalPost = postService.getById(id);
@@ -37,6 +40,7 @@ public class PostController {
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
             model.addAttribute("post", post);
+            model.addAttribute("comment", new org.studyeasy.SpringStarterMVCProject.models.Comment());
 
             /*
              * other way to get username of current logged in user
@@ -95,6 +99,7 @@ public class PostController {
             return "redirect:/?error";
         }
         // everything good then save post
+        post.setSummary(aiSummarizationService.generateSummary(post.getBody()));
         postService.save(post);
 
         return "redirect:/post/" + post.getId();
@@ -128,6 +133,7 @@ public class PostController {
         Post existingPost=optionalPost.get();
         existingPost.setTitle(post.getTitle());//in the existing post s et the tirle which you got from edited post
         existingPost.setBody(post.getBody());
+        existingPost.setSummary(aiSummarizationService.generateSummary(existingPost.getBody()));
         postService.save(existingPost);
         return "redirect:/post/"+existingPost.getId();
      }

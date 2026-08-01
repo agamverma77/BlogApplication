@@ -40,4 +40,35 @@ public class Post {
     //name of table acc id
     //col name id
     //nullable marks whether we'll accept a post without user or not
+
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
+    @jakarta.persistence.OneToMany(mappedBy = "post", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Comment> comments = new java.util.ArrayList<>();
+
+    public String getPlainSnippet() {
+        if (body == null) return "";
+        String plain = body.replaceAll("<[^>]*>", " ").replaceAll("&nbsp;", " ").replaceAll("\\s+", " ").trim();
+        if (plain.length() > 140) {
+            return plain.substring(0, 137) + "...";
+        }
+        return plain;
+    }
+
+    public String getSummarySnippet() {
+        if (summary == null || summary.trim().isEmpty()) return null;
+        String plain = summary.replaceAll("<[^>]*>", " ").replaceAll("&nbsp;", " ").replaceAll("\\s+", " ").trim();
+        if (plain.length() > 130) {
+            return plain.substring(0, 127) + "...";
+        }
+        return plain;
+    }
+
+    public int getEstimatedReadTime() {
+        if (body == null || body.trim().isEmpty()) return 1;
+        String plain = body.replaceAll("<[^>]*>", " ");
+        String[] words = plain.trim().split("\\s+");
+        return Math.max(1, (int) Math.ceil((double) words.length / 200));
+    }
 }
