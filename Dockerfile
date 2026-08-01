@@ -4,19 +4,17 @@
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
 WORKDIR /workspace
 
-# Copy Maven wrapper & descriptor files first to leverage caching
+# Copy Maven descriptor
 COPY pom.xml .
-COPY .mvn .mvn
-COPY mvnw .
 
-# Pre-download dependencies
-RUN ./mvnw dependency:go-offline -B || true
+# Pre-download dependencies for caching
+RUN mvn dependency:go-offline -B || true
 
 # Copy source code
 COPY src src
 
 # Package the executable JAR (skipping tests for fast build)
-RUN ./mvnw clean package -DskipTests -B
+RUN mvn clean package -DskipTests -B
 
 # ----------------------------------------------------
 # Stage 2: Minimal Production Runtime
