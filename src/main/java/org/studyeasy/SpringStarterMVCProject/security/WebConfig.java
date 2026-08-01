@@ -28,11 +28,15 @@ public class WebConfig {
         "/",
         "/login",
         "/register",
+        "/forgot-password",
         "/db-console/**",
         "/css/**",
         "/fonts/**",
         "/images/**",
-        "/js/**"
+        "/js/**",
+        "/uploads/**",
+        "/error",
+        "/favicon.ico"
     };
 
     @Bean
