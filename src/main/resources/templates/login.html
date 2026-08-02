@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-   <head th:replace="/fragements/head :: head">
-
+<head th:replace="~{/fragements/head :: head}">
+</head>
 
 <body class="sub_page">
 
@@ -10,51 +10,62 @@
     <div class="bg-box">
       <img th:src="@{/images/nav-bg.jpg}" alt="">
     </div>
-    <header th:replace="/fragements/header :: header">
+    <header th:replace="~{/fragements/header :: header}"></header>
   </div>
 
-  <!-- book section -->
+  <!-- Login Section -->
   <section class="book_section layout_padding">
     <div class="container">
-      <div class="heading_container">
-        <h4>
-          Login
-        </h4>
+      <div class="heading_container mb-4">
+        <h2>Sign In to BlogVerse</h2>
       </div>
-      <div class="row">
-        <div class="col-md-6">
+      
+      <div class="row justify-content-center">
+        <div class="col-md-6 bg-white p-4 rounded shadow-sm border">
+          
+          <div th:if="${param.error}" class="alert alert-danger" role="alert">
+            Invalid email or password. Please try again.
+          </div>
+          <div th:if="${param.logout}" class="alert alert-success" role="alert">
+            You have been logged out successfully.
+          </div>
+
           <div class="form_container">
-            <form action="#"
-              th:action="@{/login}"
-              method="post">
-              <div>
-                <input id="email" name="email" type="email" class="form-control" placeholder="Email" required/>
+            <form th:action="@{/login}" method="post">
+              <div class="form-group mb-3">
+                <label for="email" class="font-weight-bold text-dark">Email Address</label>
+                <input id="email" name="email" type="email" class="form-control" placeholder="name@example.com" required />
               </div>
-              <div>
-                <input id="password" name="password" type="password" class="form-control" placeholder="Password" required/>
+              <div class="form-group mb-3">
+                <label for="password" class="font-weight-bold text-dark">Password</label>
+                <input id="password" name="password" type="password" class="form-control" placeholder="Enter your password" required />
               </div>
-              <div>
+              <div class="form-group d-flex justify-content-between align-items-center mb-4">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="remember-me" id="remember-me" name="remember-me"/>
-                  <label class="form-check-label" for="flexCheckChecked">
+                  <input class="form-check-input" type="checkbox" value="remember-me" id="remember-me" name="remember-me" />
+                  <label class="form-check-label text-muted" for="remember-me">
                     Remember me
                   </label>
-                  | <a th:href="@{/forgot-password}" class="link-secondary">Forgot Password</a>
+                </div>
+                <a th:href="@{/forgot-password}" class="text-warning font-weight-bold small">Forgot Password?</a>
               </div>
               <div class="btn_box">
-                <button type="submit">
-                 Login
+                <button type="submit" class="btn btn-warning btn-block font-weight-bold py-2 rounded-pill text-dark">
+                  Sign In
                 </button>
+              </div>
+              <div class="text-center mt-3">
+                <span class="text-muted">Don't have an account?</span>
+                <a th:href="@{/register}" class="text-warning font-weight-bold ml-1">Register here</a>
               </div>
             </form>
           </div>
         </div>
+      </div>
     </div>
   </section>
-  <!-- end book section -->
-  
-  
+
+  <footer th:replace="~{/fragements/footer :: footer}"></footer>
 
 </body>
-
 </html>

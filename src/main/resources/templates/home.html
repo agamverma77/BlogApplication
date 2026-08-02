@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head th:replace="/fragements/head :: head">
+<head th:replace="~{/fragements/head :: head}">
 </head>
 
 <body class="sub_page">
@@ -10,7 +10,7 @@
     <div class="bg-box">
       <img th:src="@{/images/nav-bg.jpg}" alt="">
     </div>
-    <header th:replace="/fragements/header :: header"></header>
+    <header th:replace="~{/fragements/header :: header}"></header>
     
     <!-- Hero Banner Section -->
     <div class="hero-banner text-center text-white py-5">
@@ -35,7 +35,7 @@
                 <button type="submit" class="btn btn-warning rounded-pill px-4 font-weight-bold text-dark d-flex align-items-center">
                   <i class="fa fa-search mr-2"></i> Search
                 </button>
-                <a th:if="${searchQuery != null and !#strings.isEmpty(searchQuery)}" th:href="@{/}" 
+                <a th:if="${searchQuery != null and !searchQuery.isEmpty()}" th:href="@{/}" 
                    class="btn btn-light rounded-pill ml-1 px-3 d-flex align-items-center text-muted" title="Clear search">
                   <i class="fa fa-times"></i>
                 </a>
@@ -62,17 +62,17 @@
       <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <div>
           <h2 class="h3 font-weight-bold text-dark mb-1" style="font-family: 'Open Sans', sans-serif;">
-            <span th:if="${searchQuery != null and !#strings.isEmpty(searchQuery)}">
+            <span th:if="${searchQuery != null and !searchQuery.isEmpty()}">
               Search Results for "<span class="text-warning" th:text="${searchQuery}"></span>"
             </span>
-            <span th:unless="${searchQuery != null and !#strings.isEmpty(searchQuery)}">
+            <span th:unless="${searchQuery != null and !searchQuery.isEmpty()}">
               Latest Articles
             </span>
           </h2>
-          <p class="text-muted mb-0" th:text="${posts.size()} + ' post(s) found'"></p>
+          <p class="text-muted mb-0" th:text="${(posts != null ? posts.size() : 0) + ' post(s) found'}"></p>
         </div>
         
-        <div th:if="${searchQuery != null and !#strings.isEmpty(searchQuery)}">
+        <div th:if="${searchQuery != null and !searchQuery.isEmpty()}">
           <a th:href="@{/}" class="btn btn-sm btn-outline-secondary rounded-pill">
             <i class="fa fa-arrow-left mr-1"></i> Show All Posts
           </a>
@@ -80,17 +80,17 @@
       </div>
 
       <!-- Empty State when no posts found -->
-      <div th:if="${#lists.isEmpty(posts)}" class="text-center py-5 my-5 bg-white rounded-lg shadow-sm p-5 border">
+      <div th:if="${posts == null or #lists.isEmpty(posts)}" class="text-center py-5 my-5 bg-white rounded-lg shadow-sm p-5 border">
         <div class="empty-state-icon mb-4">
           <i class="fa-regular fa-newspaper fa-4x text-muted" style="opacity: 0.5;"></i>
         </div>
         <h3 class="h4 font-weight-bold text-dark">No Articles Found</h3>
         <p class="text-muted mb-4">
-          <span th:if="${searchQuery != null}">We couldn't find any articles matching your search query. Try searching with different keywords!</span>
-          <span th:unless="${searchQuery != null}">There are currently no blog posts available. Be the first one to share your thoughts!</span>
+          <span th:if="${searchQuery != null and !searchQuery.isEmpty()}">We couldn't find any articles matching your search query. Try searching with different keywords!</span>
+          <span th:unless="${searchQuery != null and !searchQuery.isEmpty()}">There are currently no blog posts available. Be the first one to share your thoughts!</span>
         </p>
         <div class="d-inline-flex gap-2">
-          <a th:if="${searchQuery != null}" th:href="@{/}" class="btn btn-outline-secondary rounded-pill px-4 mr-2">
+          <a th:if="${searchQuery != null and !searchQuery.isEmpty()}" th:href="@{/}" class="btn btn-outline-secondary rounded-pill px-4 mr-2">
             Clear Search
           </a>
           <a sec:authorize="isAuthenticated()" th:href="@{/posts/add}" class="btn btn-warning text-dark font-weight-bold rounded-pill px-4">
@@ -103,7 +103,7 @@
       </div>
 
       <!-- Posts Cards Grid -->
-      <div th:unless="${#lists.isEmpty(posts)}" class="row">
+      <div th:if="${posts != null and !#lists.isEmpty(posts)}" class="row">
         <div class="col-lg-4 col-md-6 mb-4 d-flex align-items-stretch" th:each="post : ${posts}">
           <div class="card blog-card w-100 shadow-sm border-0 rounded-lg overflow-hidden d-flex flex-column">
             
@@ -245,7 +245,7 @@
     }
   </style>
 
-  <footer th:replace="/fragements/footer :: footer"></footer>
+  <footer th:replace="~{/fragements/footer :: footer}"></footer>
 
 </body>
 </html>

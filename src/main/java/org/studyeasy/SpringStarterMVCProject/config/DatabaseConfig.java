@@ -1,6 +1,8 @@
 package org.studyeasy.SpringStarterMVCProject.config;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
@@ -41,19 +43,32 @@ public class DatabaseConfig {
             dbUrl = rawDatasourceUrl;
         }
 
-        // If DATABASE_URL is provided in standard cloud URI format (postgres:// or postgresql:// without jdbc:)
+        if (dbUrl != null) {
+            dbUrl = dbUrl.trim();
+        }
+
+        // Case 1: Cloud PostgreSQL URI (postgres:// or postgresql://)
         if (dbUrl != null && (dbUrl.startsWith("postgres://") || dbUrl.startsWith("postgresql://"))) {
             try {
-                logger.info("Detected Cloud PostgreSQL URI format in DATABASE_URL, converting for JDBC...");
-                URI uri = new URI(dbUrl);
+                logger.info("Detected Cloud PostgreSQL URI format in DATABASE_URL, parsing...");
+                
+                // Clean scheme if needed for standard URI parser
+                String uriString = dbUrl;
+                if (uriString.startsWith("postgresql://")) {
+                    uriString = "postgres://" + uriString.substring("postgresql://".length());
+                }
+                
+                URI uri = new URI(uriString);
                 String userInfo = uri.getUserInfo();
                 String username = datasourceUsername;
                 String password = datasourcePassword;
 
                 if (userInfo != null && userInfo.contains(":")) {
                     String[] parts = userInfo.split(":", 2);
-                    username = parts[0];
-                    password = parts[1];
+                    username = URLDecoder.decode(parts[0], StandardCharsets.UTF_8);
+                    password = URLDecoder.decode(parts[1], StandardCharsets.UTF_8);
+                } else if (userInfo != null) {
+                    username = URLDecoder.decode(userInfo, StandardCharsets.UTF_8);
                 }
 
                 String host = uri.getHost();
@@ -61,17 +76,33 @@ public class DatabaseConfig {
                 String path = uri.getPath(); // includes leading '/'
                 String dbName = (path != null && path.length() > 1) ? path.substring(1) : "blogverse";
 
-                String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
-                if (uri.getQuery() != null && !uri.getQuery().isEmpty()) {
-                    jdbcUrl += "?" + uri.getQuery();
+                StringBuilder jdbcUrl = new StringBuilder("jdbc:postgresql://")
+                        .append(host)
+                        .append(":")
+                        .append(port)
+                        .append("/")
+                        .append(dbName);
+
+                boolean hasQuery = (uri.getQuery() != null && !uri.getQuery().isEmpty());
+                if (hasQuery) {
+                    jdbcUrl.append("?").append(uri.getQuery());
                 }
 
-                logger.info("Configured JDBC URL: jdbc:postgresql://{}:{}/{}", host, port, dbName);
+                // If remote host and no sslmode parameter is present, enforce sslmode=require
+                if (host != null && !host.equals("localhost") && !host.equals("127.0.0.1") && !jdbcUrl.toString().contains("sslmode")) {
+                    jdbcUrl.append(hasQuery ? "&" : "?").append("sslmode=require");
+                }
+
+                logger.info("Configured PostgreSQL JDBC URL for host: {}, db: {}", host, dbName);
 
                 HikariConfig config = new HikariConfig();
-                config.setJdbcUrl(jdbcUrl);
-                config.setUsername(username);
-                config.setPassword(password);
+                config.setJdbcUrl(jdbcUrl.toString());
+                if (username != null && !username.isEmpty()) {
+                    config.setUsername(username);
+                }
+                if (password != null && !password.isEmpty()) {
+                    config.setPassword(password);
+                }
                 config.setDriverClassName("org.postgresql.Driver");
                 config.setMaximumPoolSize(5);
                 config.setMinimumIdle(1);
@@ -81,20 +112,32 @@ public class DatabaseConfig {
 
                 return new HikariDataSource(config);
             } catch (Exception e) {
-                logger.error("Error parsing DATABASE_URL URI: {}", e.getMessage(), e);
+                logger.error("Error parsing PostgreSQL URI ({}), falling back to direct configuration: {}", dbUrl, e.getMessage());
             }
         }
 
-        // Fallback to standard datasource configuration (H2 or standard JDBC url)
+        // Case 2: Standard JDBC URL (jdbc:postgresql://, jdbc:h2:, etc.) or local fallback
         HikariConfig config = new HikariConfig();
         String finalUrl = (dbUrl != null && !dbUrl.trim().isEmpty()) ? dbUrl : "jdbc:h2:file:./db/blogdb";
         config.setJdbcUrl(finalUrl);
-        config.setUsername((datasourceUsername != null && !datasourceUsername.trim().isEmpty()) ? datasourceUsername : "admin");
-        config.setPassword((datasourcePassword != null && !datasourcePassword.trim().isEmpty()) ? datasourcePassword : "password");
+
+        if (datasourceUsername != null && !datasourceUsername.trim().isEmpty()) {
+            config.setUsername(datasourceUsername);
+        } else if (finalUrl.startsWith("jdbc:h2:")) {
+            config.setUsername("admin");
+        }
+
+        if (datasourcePassword != null && !datasourcePassword.trim().isEmpty()) {
+            config.setPassword(datasourcePassword);
+        } else if (finalUrl.startsWith("jdbc:h2:")) {
+            config.setPassword("password");
+        }
+
         if (driverClassName != null && !driverClassName.trim().isEmpty()) {
             config.setDriverClassName(driverClassName);
         }
 
+        logger.info("Initializing DataSource with URL: {}", finalUrl);
         return new HikariDataSource(config);
     }
 }
