@@ -39,9 +39,9 @@
     <div class="container  ">
         <div class="post">
           <h3><a th:text="${post.title}">Title</a></h3>
-          <h5 th:text="'Author: '+${post.account.firstname} + 
-          ' | Created at: '+${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}+
-          ' | Updated at: '+${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}"></h5>
+          <h5 th:text="'Author: ' + (${post.account != null and post.account.firstname != null ? post.account.firstname : 'Anonymous'}) + 
+          ' | Created at: ' + (${post.createdAt != null ? #temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm') : 'Recently'}) +
+          ' | Updated at: ' + (${post.updatedAt != null ? #temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm') : 'Recently'})"></h5>
           
           <div th:if="${post.summary != null}" class="alert alert-info mt-3 mb-4" role="alert">
             <strong>✨ AI Summary:</strong> <span th:text="${post.summary}"></span>
@@ -83,7 +83,7 @@
 
           <div th:each="comment : ${post.comments}" class="p-3 mb-3 rounded" style="background-color: #2c3440; border: 1px solid #4a5568;">
               <p class="mb-1" style="color: #f8f9fa; font-size: 1rem; white-space: pre-wrap;" th:text="${comment.body}"></p>
-              <small style="color: #adb5bd;" th:text="'- ' + ${comment.account.firstname} + ' on ' + ${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></small>
+              <small style="color: #adb5bd;" th:text="'- ' + (${comment.account != null and comment.account.firstname != null ? comment.account.firstname : 'Anonymous'}) + ' on ' + (${comment.createdAt != null ? #temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm') : 'Recently'})"></small>
           </div>
 
       </div>

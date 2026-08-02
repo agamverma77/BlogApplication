@@ -110,12 +110,12 @@
             <!-- Card Header: Author, Date, Reading Time -->
             <div class="card-body pb-2">
               <div class="d-flex align-items-center mb-3">
-                <div class="author-avatar mr-2" th:text="${post.account != null and post.account.firstname != null ? #strings.substring(post.account.firstname, 0, 1).toUpperCase() : 'U'}">
+                <div class="author-avatar mr-2" th:text="${post.account != null and post.account.firstname != null and !post.account.firstname.trim().isEmpty() ? #strings.substring(post.account.firstname.trim(), 0, 1).toUpperCase() : 'U'}">
                   A
                 </div>
                 <div class="author-info flex-grow-1 text-truncate">
-                  <h6 class="mb-0 font-weight-bold text-dark text-truncate" th:text="${post.account != null ? post.account.firstname : 'Anonymous'}">Author</h6>
-                  <small class="text-muted" th:text="${#temporals.format(post.createdAt, 'MMM dd, yyyy')}">Date</small>
+                  <h6 class="mb-0 font-weight-bold text-dark text-truncate" th:text="${post.account != null and post.account.firstname != null ? post.account.firstname : 'Anonymous'}">Author</h6>
+                  <small class="text-muted" th:text="${post.createdAt != null ? #temporals.format(post.createdAt, 'MMM dd, yyyy') : 'Recently'}">Date</small>
                 </div>
                 <span class="badge badge-light text-muted border px-2 py-1" style="font-size: 0.75rem;">
                   <i class="fa-regular fa-clock mr-1"></i> <span th:text="${post.getEstimatedReadTime()} + 'm read'">3m read</span>

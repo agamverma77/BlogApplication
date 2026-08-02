@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{/fragements/head :: head}">
+</head>
+
+<body class="sub_page">
+
+  <div class="hero_area">
+    <div class="bg-box">
+      <img th:src="@{/images/nav-bg.jpg}" alt="">
+    </div>
+    <header th:replace="~{/fragements/header :: header}"></header>
+  </div>
+
+  <!-- Error Section -->
+  <section class="about_section layout_padding text-center py-5">
+    <div class="container my-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8 bg-white p-5 rounded shadow-sm border">
+          <div class="mb-4">
+            <i class="fa-solid fa-triangle-exclamation fa-4x text-warning"></i>
+          </div>
+          <h2 class="font-weight-bold text-dark mb-3">Something Went Wrong</h2>
+          <p class="lead text-muted mb-4" th:text="${message != null and !message.isEmpty() ? message : 'An unexpected error occurred while processing your request.'}">
+            An unexpected error occurred.
+          </p>
+          <div th:if="${status != null}" class="badge badge-light border text-muted px-3 py-2 mb-4">
+            Status Code: <span th:text="${status}">500</span>
+          </div>
+          <div>
+            <a th:href="@{/}" class="btn btn-warning font-weight-bold text-dark rounded-pill px-4 py-2 mr-2">
+              <i class="fa fa-home mr-1"></i> Back to Home
+            </a>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+              <i class="fa fa-arrow-left mr-1"></i> Go Back
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer th:replace="~{/fragements/footer :: footer}"></footer>
+
+</body>
+</html>
